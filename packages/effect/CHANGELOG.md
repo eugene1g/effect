@@ -1,5 +1,11 @@
 # effect
 
+## 4.0.0-rc.115
+
+### Patch Changes
+
+- [#8187](https://github.com/Effect-TS/effect/pull/8187) [`4f73f9e`](https://github.com/Effect-TS/effect/commit/4f73f9e0bd9538260f0f7166e0e6abdbd507a0e8) Thanks @tim-smart! - Parameterize persistence lookup keys in both SQL backing stores' `getMany` queries.
+
 ## 4.0.0-rc.114
 
 ### Patch Changes
