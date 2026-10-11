@@ -351,7 +351,8 @@ export const fromDuplex = <RO>(
                   ? undefined
                   : [...upgradeOptions.alpnProtocols],
                 requestCert: upgradeOptions.requestCert,
-                rejectUnauthorized: upgradeOptions.rejectUnauthorized
+                rejectUnauthorized: upgradeOptions.rejectUnauthorized,
+                servername: upgradeOptions.servername
               }
               tls = isServer
                 ? new Tls.TLSSocket(raw as Net.Socket, { ...tlsOptions, isServer: true })

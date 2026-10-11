@@ -499,6 +499,44 @@ describe("Socket", () => {
         assert.strictEqual(received, "HelloWorld")
       }))
 
+    it.effect("passes servername to a client TLS upgrade and verifies against it", () =>
+      Effect.gen(function*() {
+        // The server records the SNI each handshake carries.
+        const sniSeen: Array<string> = []
+        const server = yield* NodeSocketServer.makeTls({
+          host: "127.0.0.1",
+          port: 0,
+          cert,
+          key,
+          SNICallback: (servername, callback) => {
+            sniSeen.push(servername)
+            callback(null, Tls.createSecureContext({ cert, key }))
+          }
+        })
+        yield* server.run(echoHandler).pipe(Effect.forkScoped)
+        const port = (server.address as NetAddress.InetAddress).port
+
+        // The fixture certificate covers `localhost`, so verifying against that name succeeds.
+        const trusted = yield* NodeSocket.makeNet({ host: "127.0.0.1", port })
+        const received = yield* sendHelloWorld(trusted, {
+          ca: [cert],
+          rejectUnauthorized: true,
+          servername: "localhost"
+        })
+        assert.strictEqual(received, "HelloWorld")
+        assert.deepStrictEqual(sniSeen, ["localhost"])
+
+        // A name the certificate does not cover is refused: the name is what is verified.
+        const mismatched = yield* NodeSocket.makeNet({ host: "127.0.0.1", port })
+        const error = yield* sendHelloWorld(mismatched, {
+          ca: [cert],
+          rejectUnauthorized: true,
+          servername: "other.invalid"
+        }).pipe(Effect.flip)
+        assert.strictEqual(error._tag, "SocketError")
+        assert.include(String(error.reason.cause), "altnames")
+      }))
+
     it.live("requires both key and cert for server TLS upgrades", () =>
       Effect.gen(function*() {
         const raw = new Duplex({

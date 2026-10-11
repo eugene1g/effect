@@ -171,6 +171,13 @@ export interface TlsUpgradeOptions {
   readonly alpnProtocols?: ReadonlyArray<string> | undefined
   readonly requestCert?: boolean | undefined
   readonly rejectUnauthorized?: boolean | undefined
+  /**
+   * The host name the peer certificate is verified against, also sent as the
+   * SNI extension. Client upgrades only; ignored for server upgrades. When
+   * omitted, the adapter's default applies (Node: `tls.connect` falls back to
+   * `localhost`, so set this for any upgrade that verifies the peer).
+   */
+  readonly servername?: string | undefined
 }
 
 /**
